@@ -1,3 +1,26 @@
+function isCommandAvailable(charID) {
+  try {
+    var ref = new ActionReference();
+    ref.putProperty(charIDToTypeID("Prpr"), charIDToTypeID("Enab"));
+    ref.putClass(charIDToTypeID(charID));
+
+    var desc = executeActionGet(ref);
+    return desc.getBoolean(charIDToTypeID("Enab"));
+  } catch (e) {
+    return false;
+  }
+}
+
+function safeMergeVisible() {
+  try {
+    if (isCommandAvailable("MrgV")) {
+      app.activeDocument.mergeVisibleLayers();
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
 function truncateEnd(str, max) {
   if (str.length <= max) return str;
   return "..." + str.slice(-max);
@@ -175,10 +198,10 @@ function main() {
       }
 
       tempGroup.layers[i].visible = true;
-      tempDoc.mergeVisibleLayers();
+      safeMergeVisible(); // si indisponible, on ignore et on continue
 
       var file = new File(
-        selectedFolder.fsName + "/" + layer.name + "." + selectedFormat
+        selectedFolder.fsName + "/" + layer.name + "." + selectedFormat,
       );
 
       if (selectedFormat === "png") {
